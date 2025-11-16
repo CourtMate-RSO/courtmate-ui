@@ -6,11 +6,6 @@ import { FiCalendar, FiMapPin, FiClock, FiUsers } from "react-icons/fi";
 
 export default function Home() {
   const { data: session, status } = useSession();
-  console.log('Environment check:', {
-    AUTH_SECRET: process.env.AUTH_SECRET,
-    AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
-    USER_SERVICE_URL: process.env.USER_SERVICE_URL,
-  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">

@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/';
+  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
 
   const handleCredentialsLogin = async (e: React.FormEvent) => {
     e.preventDefault();

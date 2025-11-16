@@ -53,20 +53,8 @@ export default function RegisterPage() {
       });
 
       if (response.ok) {
-        // After successful registration, sign in the user
-        const result = await signIn('credentials', {
-          email: formData.email,
-          password: formData.password,
-          redirect: false,
-        });
-
-        if (result?.error) {
-          setError('Registration successful but login failed. Please try logging in.');
-          setTimeout(() => router.push('/login'), 2000);
-        } else {
-          router.push('/');
-          router.refresh();
-        }
+        // Redirect to email verification page
+        router.push('/verify-email');
       } else {
         const data = await response.json();
         setError(data.message || 'Registration failed. Please try again.');
@@ -81,7 +69,7 @@ export default function RegisterPage() {
   const handleGoogleSignUp = async () => {
     setIsLoading(true);
     try {
-      await signIn('google', { callbackUrl: '/' });
+      await signIn('google', { callbackUrl: '/dashboard' });
     } catch (err) {
       setError('Failed to sign up with Google');
       setIsLoading(false);

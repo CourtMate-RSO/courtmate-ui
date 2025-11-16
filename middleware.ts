@@ -1,30 +1,26 @@
+import { auth } from './auth';
 import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+export default auth((req) => {
+  const { pathname } = req.nextUrl;
+  const isLoggedIn = !!req.auth;
 
   // Public routes that don't require authentication
-  const publicRoutes = ['/login', '/register', '/'];
+  const publicRoutes = ['/login', '/register', '/', '/verify-email', '/auth/callback'];
   const isPublicRoute = publicRoutes.includes(pathname);
 
-  // Check if user has a session token
-  const token = request.cookies.get('next-auth.session-token') || 
-                request.cookies.get('__Secure-next-auth.session-token');
-
-  // If trying to access a protected route without a token, redirect to login
-  if (!isPublicRoute && !token) {
-    // Redirect without showing callback URL for cleaner appearance
-    return NextResponse.redirect(new URL('/login', request.url));
+  // If trying to access a protected route without being logged in, redirect to login
+  if (!isPublicRoute && !isLoggedIn) {
+    return NextResponse.redirect(new URL('/login', req.url));
   }
 
   // If logged in and trying to access login page, redirect to dashboard
-  if (token && pathname === '/login') {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+  if (isLoggedIn && pathname === '/login') {
+    return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: [

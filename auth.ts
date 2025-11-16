@@ -20,30 +20,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         try {
-          // For development: Mock authentication
-          // TODO: Replace with actual User Service API call
-          if (credentials.email === 'demo@courtmate.com' && credentials.password === 'demo123') {
-            return {
-              id: '1',
-              name: 'Demo User',
-              email: 'demo@courtmate.com',
-              accessToken: 'mock-access-token',
-              refreshToken: 'mock-refresh-token',
-            };
-          }
-
           // Call your User Service endpoint for credentials login
-          const response = await fetch(
-            `${process.env.USER_SERVICE_URL || 'http://localhost:8000'}/api/auth/login`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                email: credentials.email,
-                password: credentials.password,
-              }),
-            }
-          );
+          const baseUrl = process.env.USER_SERVICE_URL || 'http://localhost:8000';
+          const url = baseUrl.endsWith('/') ? `${baseUrl}auth/login` : `${baseUrl}/auth/login`;
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          });
 
           if (response.ok) {
             const data = await response.json();
@@ -76,18 +63,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (account?.provider === 'google') {
         try {
           // Send Google token to your User Service
-          const response = await fetch(
-            `${process.env.USER_SERVICE_URL || 'http://localhost:8000'}/api/auth/google`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                id_token: account.id_token,
-                email: profile?.email,
-                name: profile?.name,
-              }),
-            }
-          );
+          const baseUrl = process.env.USER_SERVICE_URL || 'http://localhost:8000';
+          const url = baseUrl.endsWith('/') ? `${baseUrl}auth/google` : `${baseUrl}/auth/google`;
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              id_token: account.id_token,
+              email: profile?.email,
+              name: profile?.name,
+            }),
+          });
 
           if (response.ok) {
             const data = await response.json();

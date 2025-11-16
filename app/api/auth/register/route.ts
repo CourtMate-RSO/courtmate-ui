@@ -14,14 +14,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Call User Service API for registration
-    const response = await fetch(
-      `${process.env.USER_SERVICE_URL || 'http://localhost:8000'}/api/auth/signup`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      }
-    );
+    const baseUrl = process.env.USER_SERVICE_URL || 'http://localhost:8000';
+    const url = baseUrl.endsWith('/') ? `${baseUrl}auth/signup` : `${baseUrl}/auth/signup`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
 
     if (!response.ok) {
       const error = await response.json();
