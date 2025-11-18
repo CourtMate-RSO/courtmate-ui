@@ -15,6 +15,13 @@ Modern web application for booking and managing sports courts built with Next.js
   - Profile setup (full name, phone, role)
   - Role selection (Player/Manager)
 
+- 🗺️ **Nearby Courts**
+  - Find courts near your location using geolocation
+  - Interactive Google Maps integration
+  - Adjustable search radius (5-50 km)
+  - List and map view of nearby facilities
+  - Real-time distance calculations
+
 - 📱 **Responsive UI**
   - Modern gradient design
   - Dark mode support
@@ -63,6 +70,16 @@ AUTH_GOOGLE_SECRET=your-google-client-secret
 # User Service API
 USER_SERVICE_URL=http://127.0.0.1:8000/
 NEXT_PUBLIC_USER_SERVICE_URL=http://127.0.0.1:8000/
+
+# Facilities Service API
+FACILITIES_SERVICE_URL=http://127.0.0.1:8001/
+NEXT_PUBLIC_FACILITIES_SERVICE_URL=http://127.0.0.1:8001/
+
+# API Version
+API_VERSION=v1
+
+# Google Maps API Key (Required for nearby courts feature)
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-api-key-here
 ```
 
 ## Development
@@ -85,12 +102,16 @@ The application will be available at `http://localhost:3000`
 ```
 courtmate-ui/
 ├── app/
-│   ├── api/auth/          # NextAuth API routes
-│   │   └── register/      # Registration endpoint
+│   ├── api/
+│   │   ├── auth/          # NextAuth API routes
+│   │   │   └── register/  # Registration endpoint
+│   │   └── facilities/
+│   │       └── nearby/    # Nearby courts API endpoint
 │   ├── auth/
 │   │   └── callback/      # Email verification callback
 │   ├── dashboard/         # Protected dashboard page
 │   ├── login/             # Login page
+│   ├── nearby-courts/     # Nearby courts with Google Maps
 │   ├── register/          # Registration page
 │   ├── verify-email/      # Email verification instructions
 │   ├── layout.tsx         # Root layout with AuthProvider
@@ -132,12 +153,16 @@ courtmate-ui/
 
 ## API Endpoints Used
 
+### User Service
 - `POST /auth/login` - Email/password authentication
 - `POST /auth/signup` - User registration
 - `POST /auth/google` - Google OAuth authentication
 - `GET /auth/me` - Get current user
 - `GET /user/{user_id}` - Get user profile
 - `PUT /user/{user_id}` - Update user profile
+
+### Facilities Service
+- `POST /api/{version}/facilities/nearby` - Get nearby courts based on location
 
 ## Protected Routes
 
@@ -150,6 +175,7 @@ Public routes:
 - `/register` - Registration page
 - `/verify-email` - Email verification instructions
 - `/auth/callback` - Email verification callback
+- `/nearby-courts` - Find courts near your location (requires browser geolocation)
 
 ## Configuration
 
@@ -164,6 +190,15 @@ Public routes:
 3. Create OAuth 2.0 credentials
 4. Add authorized redirect: `http://localhost:3000/api/auth/callback/google`
 5. Copy Client ID and Secret to `.env.local`
+
+### Google Maps Setup
+1. Go to Google Cloud Console
+2. Enable Maps JavaScript API and Places API
+3. Create API key (or use existing one)
+4. Add API key restrictions:
+   - HTTP referrers: `http://localhost:3000/*` (for development)
+   - API restrictions: Maps JavaScript API, Places API
+5. Add `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` to `.env.local`
 
 ## Development Notes
 

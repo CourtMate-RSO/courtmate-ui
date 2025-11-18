@@ -111,8 +111,8 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mb-4">
+          <Link href="/nearby-courts" className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow block group">
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <FiMapPin className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -121,7 +121,10 @@ export default function Home() {
             <p className="text-gray-600 dark:text-gray-400">
               Discover courts near your location with our smart search feature.
             </p>
-          </div>
+            <div className="mt-4 text-sm text-green-600 dark:text-green-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              View on Map →
+            </div>
+          </Link>
 
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-4">
