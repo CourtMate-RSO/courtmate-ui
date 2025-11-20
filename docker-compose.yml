@@ -1,0 +1,18 @@
+services:
+  courtmate-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: courtmate-ui
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # Connect to backend service (replace with actual URL or service name if in same compose)
+      - USER_SERVICE_URL=http://host.docker.internal:8000
+      # NextAuth Configuration
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=your_secret_here
+      # Add other env vars from .env.local here
+    extra_hosts:
+      - "host.docker.internal:host-gateway" # Allows access to localhost on Linux
