@@ -37,12 +37,31 @@ export default function NearbyCourtsPage() {
   const [apiError, setApiError] = useState<string | null>(null);
   const [selectedCourt, setSelectedCourt] = useState<Court | null>(null);
   const [radius, setRadius] = useState(10);
-
-  const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+  const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string>('');
+  const [configLoading, setConfigLoading] = useState(true);
 
   useEffect(() => {
-    getUserLocation();
+    // Fetch Google Maps API key from backend at runtime
+    const fetchConfig = async () => {
+      try {
+        const response = await fetch('/api/config');
+        const data = await response.json();
+        setGoogleMapsApiKey(data.googleMapsApiKey);
+      } catch (err) {
+        console.error('Failed to load config:', err);
+      } finally {
+        setConfigLoading(false);
+      }
+    };
+    
+    fetchConfig();
   }, []);
+
+  useEffect(() => {
+    if (!configLoading) {
+      getUserLocation();
+    }
+  }, [configLoading]);
 
   const getUserLocation = () => {
     setLoading(true);
@@ -144,7 +163,7 @@ export default function NearbyCourtsPage() {
     getUserLocation();
   };
 
-  if (!GOOGLE_MAPS_API_KEY) {
+  if (!configLoading && !googleMapsApiKey) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-w-md">
@@ -256,7 +275,7 @@ export default function NearbyCourtsPage() {
                     </div>
                   </div>
                 )}
-                <APIProvider apiKey={GOOGLE_MAPS_API_KEY}>
+                <APIProvider apiKey={googleMapsApiKey}>
                   <Map
                     defaultCenter={userLocation}
                     defaultZoom={12}
