@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { FiArrowLeft, FiMapPin, FiNavigation, FiLoader } from 'react-icons/fi';
 
 interface Court {
-  id: number;
+  id: string;
   name: string;
   address: string;
   latitude: number;
@@ -17,7 +17,7 @@ interface Court {
 }
 
 interface NearbyCourtsResponse {
-  courts: Court[];
+  courts: any[];
   total_count: number;
   search_location: {
     latitude: number;
@@ -29,7 +29,7 @@ interface NearbyCourtsResponse {
 export default function NearbyCourtsPage() {
   // Default to a central location (e.g., Ljubljana, Slovenia) if geolocation fails
   const DEFAULT_LOCATION = { lat: 46.0569, lng: 14.5058 };
-  
+
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(DEFAULT_LOCATION);
   const [courts, setCourts] = useState<Court[]>([]);
   const [loading, setLoading] = useState(false);
@@ -53,7 +53,7 @@ export default function NearbyCourtsPage() {
         setConfigLoading(false);
       }
     };
-    
+
     fetchConfig();
   }, []);
 
@@ -86,20 +86,20 @@ export default function NearbyCourtsPage() {
         await fetchNearbyCourts(latitude, longitude, radius);
       },
       (err) => {
-        const errorMessage = err.code === 1 
+        const errorMessage = err.code === 1
           ? 'Location access denied. Using default location.'
           : err.code === 2
-          ? 'Unable to determine location. Using default location.'
-          : 'Location timeout. Using default location.';
-        
+            ? 'Unable to determine location. Using default location.'
+            : 'Location timeout. Using default location.';
+
         setLocationError(errorMessage);
         setLoading(false);
-        
+
         // Only log to console in development
         if (process.env.NODE_ENV === 'development') {
           console.warn('Geolocation unavailable (code ' + err.code + '). Using fallback location.');
         }
-        
+
         // Still try to fetch courts at default location
         if (userLocation) {
           fetchNearbyCourts(userLocation.lat, userLocation.lng, radius);
@@ -117,7 +117,7 @@ export default function NearbyCourtsPage() {
     try {
       setLoading(true);
       setApiError(null);
-      
+
       const response = await fetch('/api/facilities/nearby', {
         method: 'POST',
         headers: {
@@ -136,13 +136,26 @@ export default function NearbyCourtsPage() {
       }
 
       const data: NearbyCourtsResponse = await response.json();
-      setCourts(data.courts || []);
+
+      // Map API response to Court interface
+      const mappedCourts: Court[] = (data.courts || []).map((court: any) => ({
+        id: court.id,
+        name: court.name || 'Unknown Court',
+        address: court.address_line || court.city || 'No address',
+        latitude: court.location?.latitude || 0,
+        longitude: court.location?.longitude || 0,
+        distance: court.distance_km,
+        description: '',
+        sport_type: '',
+      })).filter(c => c.latitude !== 0 && c.longitude !== 0); // Filter out invalid locations
+
+      setCourts(mappedCourts);
       setApiError(null);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load nearby courts';
       setApiError(errorMessage + '. The map will still display.');
       setCourts([]); // Set empty array so map still shows
-      
+
       // Only log detailed errors in development
       if (process.env.NODE_ENV === 'development') {
         console.error('Facilities API error:', err);
@@ -333,10 +346,16 @@ export default function NearbyCourtsPage() {
                             </p>
                           )}
                           {selectedCourt.distance !== undefined && (
-                            <p className="text-xs text-blue-600 font-medium">
+                            <p className="text-xs text-blue-600 font-medium mb-3">
                               {selectedCourt.distance.toFixed(2)} km away
                             </p>
                           )}
+                          <Link
+                            href={`/booking/${selectedCourt.id}`}
+                            className="block w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors text-center"
+                          >
+                            Book Now
+                          </Link>
                         </div>
                       </InfoWindow>
                     )}
@@ -369,27 +388,37 @@ export default function NearbyCourtsPage() {
                       {courts.map((court) => (
                         <div
                           key={court.id}
-                          className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                          onClick={() => setSelectedCourt(court)}
+                          className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                         >
-                          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                            {court.name}
-                          </h3>
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                            {court.address}
-                          </p>
-                          <div className="flex items-center justify-between">
-                            {court.sport_type && (
-                              <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
-                                {court.sport_type}
-                              </span>
-                            )}
-                            {court.distance !== undefined && (
-                              <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                                {court.distance.toFixed(2)} km
-                              </span>
-                            )}
+                          <div
+                            className="cursor-pointer mb-3"
+                            onClick={() => setSelectedCourt(court)}
+                          >
+                            <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                              {court.name}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                              {court.address}
+                            </p>
+                            <div className="flex items-center justify-between">
+                              {court.sport_type && (
+                                <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
+                                  {court.sport_type}
+                                </span>
+                              )}
+                              {court.distance !== undefined && (
+                                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                                  {court.distance.toFixed(2)} km
+                                </span>
+                              )}
+                            </div>
                           </div>
+                          <Link
+                            href={`/booking/${court.id}`}
+                            className="block w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all text-center shadow-md hover:shadow-lg transform hover:scale-[1.02]"
+                          >
+                            Book Now
+                          </Link>
                         </div>
                       ))}
                     </div>

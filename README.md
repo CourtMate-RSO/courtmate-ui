@@ -22,6 +22,13 @@ Modern web application for booking and managing sports courts built with Next.js
   - List and map view of nearby facilities
   - Real-time distance calculations
 
+- 🎾 **Court Booking**
+  - Book courts directly from the map
+  - Date and time selection
+  - Real-time availability checking
+  - Reservation management
+  - Authentication required for bookings
+
 - 📱 **Responsive UI**
   - Modern gradient design
   - Dark mode support
@@ -41,6 +48,7 @@ Modern web application for booking and managing sports courts built with Next.js
 
 - Node.js 18+ and pnpm
 - Running User Service backend on port 8000
+- Running Booking Service backend on port 8002
 - Supabase project with authentication enabled
 
 ## Installation
@@ -75,6 +83,9 @@ NEXT_PUBLIC_USER_SERVICE_URL=http://127.0.0.1:8000/
 FACILITIES_SERVICE_URL=http://127.0.0.1:8001/
 NEXT_PUBLIC_FACILITIES_SERVICE_URL=http://127.0.0.1:8001/
 
+# Booking Service API
+BOOKING_SERVICE_URL=http://127.0.0.1:8002/
+
 # API Version
 API_VERSION=v1
 
@@ -105,10 +116,13 @@ courtmate-ui/
 │   ├── api/
 │   │   ├── auth/          # NextAuth API routes
 │   │   │   └── register/  # Registration endpoint
+│   │   ├── booking/       # Booking API endpoint
 │   │   └── facilities/
 │   │       └── nearby/    # Nearby courts API endpoint
 │   ├── auth/
 │   │   └── callback/      # Email verification callback
+│   ├── booking/
+│   │   └── [courtId]/     # Court booking page
 │   ├── dashboard/         # Protected dashboard page
 │   ├── login/             # Login page
 │   ├── nearby-courts/     # Nearby courts with Google Maps
@@ -123,6 +137,7 @@ courtmate-ui/
 ├── lib/
 │   └── auth.ts            # Auth helper functions
 ├── types/
+│   ├── booking.ts         # Booking type definitions
 │   └── next-auth.d.ts     # TypeScript definitions
 ├── auth.ts                # NextAuth v5 configuration
 └── middleware.ts          # Route protection middleware
@@ -164,10 +179,16 @@ courtmate-ui/
 ### Facilities Service
 - `POST /api/{version}/facilities/nearby` - Get nearby courts based on location
 
+### Booking Service
+- `POST /reservation/` - Create a new court reservation
+- `GET /reservation/{reservation_id}` - Get reservation details
+- `PUT /reservation/{reservation_id}` - Cancel a reservation
+
 ## Protected Routes
 
 The following routes require authentication:
 - `/dashboard` - Main dashboard
+- `/booking/[courtId]` - Court booking page (redirects to login if not authenticated)
 
 Public routes:
 - `/` - Landing page
