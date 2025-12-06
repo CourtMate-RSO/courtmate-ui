@@ -138,8 +138,8 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
-            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-4">
+          <Link href="/bookings" className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow block group">
+            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <FiUsers className="w-6 h-6 text-orange-600 dark:text-orange-400" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -148,7 +148,10 @@ export default function Home() {
             <p className="text-gray-600 dark:text-gray-400">
               View, modify, and cancel your bookings from your personal dashboard.
             </p>
-          </div>
+            <div className="mt-4 text-sm text-orange-600 dark:text-orange-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+              View Bookings →
+            </div>
+          </Link>
         </div>
 
         {/* CTA Section */}

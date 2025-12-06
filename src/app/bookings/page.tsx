@@ -49,7 +49,7 @@ export default function BookingsPage() {
             setLoading(true);
             setError(null);
 
-            const response = await fetch('/api/bookings');
+            const response = await fetch('/api/proxy/booking/reservation/');
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ error: 'Failed to fetch bookings' }));
@@ -188,7 +188,7 @@ export default function BookingsPage() {
                                         <div className="flex-1">
                                             <div className="flex items-center gap-3 mb-2">
                                                 <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                                                    {booking.court.name}
+                                                    {booking.court?.name || `Court ${booking.court_id.slice(0, 8)}`}
                                                 </h3>
                                                 {booking.cancelled_at ? (
                                                     <span className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 text-xs font-semibold rounded-full flex items-center gap-1">
@@ -208,12 +208,12 @@ export default function BookingsPage() {
                                             </div>
                                             <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
                                                 <FiMapPin className="w-4 h-4" />
-                                                <span>{booking.court.address}</span>
+                                                <span>{booking.court?.address || 'Address unavailable'}</span>
                                             </div>
                                         </div>
                                         <div className="text-right">
                                             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                                                ${booking.total_price.toFixed(2)}
+                                                ${(booking.total_price ?? 0).toFixed(2)}
                                             </div>
                                             <div className="text-xs text-gray-500 dark:text-gray-500">
                                                 {calculateDuration(booking.starts_at, booking.ends_at)} hours

@@ -97,6 +97,46 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.id = user.id;
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
+        token.expiresAt = Date.now() + 60 * 60 * 1000; // 1 hour from now
+        return token;
+      }
+
+      // Check if token has expired and refresh if needed
+      if (token.expiresAt && Date.now() > token.expiresAt - 5 * 60 * 1000) { // Refresh 5 mins before expiry
+        try {
+          console.log('[Auth] Token expiring soon, refreshing...');
+          const baseUrl = process.env.USER_SERVICE_URL || 'http://localhost:8000';
+          const url = baseUrl.endsWith('/') ? `${baseUrl}auth/refresh_token` : `${baseUrl}/auth/refresh_token`;
+          
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token.accessToken}`
+            },
+            body: JSON.stringify({
+              refresh_token: token.refreshToken,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            console.log('[Auth] Token refreshed successfully');
+            return {
+              ...token,
+              accessToken: data.accessToken || data.access_token,
+              refreshToken: data.refreshToken || data.refresh_token || token.refreshToken,
+              expiresAt: Date.now() + 60 * 60 * 1000, // Reset expiry time
+            };
+          } else {
+            console.error('[Auth] Failed to refresh token:', response.status);
+            // Token refresh failed, mark as expired
+            return { ...token, expiresAt: 0 };
+          }
+        } catch (error) {
+          console.error('[Auth] Error refreshing token:', error);
+          return { ...token, expiresAt: 0 };
+        }
       }
       
       return token;

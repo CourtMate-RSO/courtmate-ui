@@ -76,7 +76,7 @@ export default function BookingPage() {
                 return;
             }
 
-            const response = await fetch('/api/booking', {
+            const response = await fetch('/api/proxy/booking/reservation/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
