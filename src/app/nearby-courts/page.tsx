@@ -14,6 +14,7 @@ interface Court {
   distance?: number;
   description?: string;
   sport_type?: string;
+  sport?: string;
 }
 
 interface NearbyCourtsResponse {
@@ -31,11 +32,12 @@ export default function NearbyCourtsPage() {
   const DEFAULT_LOCATION = { lat: 46.0569, lng: 14.5058 };
 
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(DEFAULT_LOCATION);
-  const [courts, setCourts] = useState<Court[]>([]);
+  const [facilities, setFacilities] = useState<Court[]>([]);
   const [loading, setLoading] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [apiError, setApiError] = useState<string | null>(null);
-  const [selectedCourt, setSelectedCourt] = useState<Court | null>(null);
+  const [selectedFacility, setSelectedFacility] = useState<Court | null>(null);
+  const [facilityCourts, setFacilityCourts] = useState<Court[]>([]);
   const [radius, setRadius] = useState(10);
   const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string>('');
   const [configLoading, setConfigLoading] = useState(true);
@@ -137,24 +139,24 @@ export default function NearbyCourtsPage() {
 
       const data: NearbyCourtsResponse = await response.json();
 
-      // Map API response to Court interface
-      const mappedCourts: Court[] = (data.courts || []).map((court: any) => ({
-        id: court.id,
-        name: court.name || 'Unknown Court',
-        address: court.address_line || court.city || 'No address',
-        latitude: court.location?.latitude || 0,
-        longitude: court.location?.longitude || 0,
-        distance: court.distance_km,
+      // Map API response to Facility interface
+      const mappedFacilities: Court[] = (data.courts || []).map((f: any) => ({
+        id: f.id,
+        name: f.name || 'Unknown Facility',
+        address: f.address_line || f.city || 'No address',
+        latitude: f.location?.latitude || 0,
+        longitude: f.location?.longitude || 0,
+        distance: f.distance_km,
         description: '',
         sport_type: '',
       })).filter(c => c.latitude !== 0 && c.longitude !== 0); // Filter out invalid locations
 
-      setCourts(mappedCourts);
+      setFacilities(mappedFacilities);
       setApiError(null);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load nearby courts';
       setApiError(errorMessage + '. The map will still display.');
-      setCourts([]); // Set empty array so map still shows
+      setFacilities([]); // Set empty array so map still shows
 
       // Only log detailed errors in development
       if (process.env.NODE_ENV === 'development') {
@@ -174,6 +176,43 @@ export default function NearbyCourtsPage() {
 
   const handleRecenter = () => {
     getUserLocation();
+  };
+
+  const handleSelectFacility = (fac: Court) => {
+    setSelectedFacility(fac);
+    // Clear previous courts and fetch new ones
+    setFacilityCourts([]);
+    fetchFacilityCourts(fac.id);
+  };
+
+  const fetchFacilityCourts = async (facilityId: string) => {
+    try {
+      setLoading(true);
+      const url = `/api/proxy/court/api/v1/facilities/${facilityId}/courts`;
+      const response = await fetch(url, { method: 'GET' });
+      if (!response.ok) {
+        throw new Error('Failed to fetch courts for facility');
+      }
+      const data = await response.json();
+      // Map response to Court type (courts have sport, name, id)
+      const mapped: Court[] = (data || []).map((c: any) => ({
+        id: c.id,
+        name: c.name || 'Court',
+        address: '',
+        latitude: 0,
+        longitude: 0,
+        distance: undefined,
+        description: '',
+        sport_type: c.sport || '',
+        sport: c.sport || c.sport_type || '',
+      }));
+      setFacilityCourts(mapped);
+    } catch (err) {
+      console.error('Error fetching facility courts:', err);
+      setFacilityCourts([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!configLoading && !googleMapsApiKey) {
@@ -210,7 +249,7 @@ export default function NearbyCourtsPage() {
                 <span>Back</span>
               </Link>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Nearby Courts
+                Nearby Facilities
               </h1>
             </div>
             <button
@@ -248,10 +287,10 @@ export default function NearbyCourtsPage() {
               </select>
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              {courts.length > 0 && (
+              {facilities.length > 0 && (
                 <span className="flex items-center gap-2">
                   <FiMapPin className="w-4 h-4" />
-                  {courts.length} court{courts.length !== 1 ? 's' : ''} found
+                  {facilities.length} facilit{facilities.length !== 1 ? 'ies' : 'y'} found
                 </span>
               )}
             </div>
@@ -308,13 +347,13 @@ export default function NearbyCourtsPage() {
                       />
                     </AdvancedMarker>
 
-                    {/* Court Markers */}
-                    {courts.map((court) => (
+                    {/* Facility Markers */}
+                    {facilities.map((fac) => (
                       <AdvancedMarker
-                        key={court.id}
-                        position={{ lat: court.latitude, lng: court.longitude }}
-                        onClick={() => setSelectedCourt(court)}
-                        title={court.name}
+                        key={fac.id}
+                        position={{ lat: fac.latitude, lng: fac.longitude }}
+                        onClick={() => handleSelectFacility(fac)}
+                        title={fac.name}
                       >
                         <Pin
                           background={'#EF4444'}
@@ -325,37 +364,32 @@ export default function NearbyCourtsPage() {
                     ))}
 
                     {/* Info Window */}
-                    {selectedCourt && (
+                    {selectedFacility && (
                       <InfoWindow
                         position={{
-                          lat: selectedCourt.latitude,
-                          lng: selectedCourt.longitude,
+                          lat: selectedFacility.latitude,
+                          lng: selectedFacility.longitude,
                         }}
-                        onCloseClick={() => setSelectedCourt(null)}
+                        onCloseClick={() => setSelectedFacility(null)}
                       >
                         <div className="p-2 min-w-[200px]">
                           <h3 className="font-bold text-gray-900 mb-1">
-                            {selectedCourt.name}
+                            {selectedFacility.name}
                           </h3>
                           <p className="text-sm text-gray-600 mb-2">
-                            {selectedCourt.address}
+                            {selectedFacility.address}
                           </p>
-                          {selectedCourt.sport_type && (
-                            <p className="text-xs text-gray-500 mb-2">
-                              Sport: {selectedCourt.sport_type}
-                            </p>
-                          )}
-                          {selectedCourt.distance !== undefined && (
+                          {selectedFacility.distance !== undefined && (
                             <p className="text-xs text-blue-600 font-medium mb-3">
-                              {selectedCourt.distance.toFixed(2)} km away
+                              {selectedFacility.distance.toFixed(2)} km away
                             </p>
                           )}
-                          <Link
-                            href={`/booking/${selectedCourt.id}`}
+                          <button
+                            onClick={() => fetchFacilityCourts(selectedFacility.id)}
                             className="block w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors text-center"
                           >
-                            Book Now
-                          </Link>
+                            View Courts
+                          </button>
                         </div>
                       </InfoWindow>
                     )}
@@ -364,20 +398,20 @@ export default function NearbyCourtsPage() {
               </div>
             </div>
 
-            {/* Courts List */}
+            {/* Facilities / Courts List */}
             <div className="lg:col-span-1">
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                   <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                    Courts List
+                    Facilities
                   </h2>
                 </div>
                 <div className="overflow-y-auto" style={{ maxHeight: '540px' }}>
-                  {courts.length === 0 ? (
+                  {facilities.length === 0 ? (
                     <div className="p-8 text-center">
                       <FiMapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-600 dark:text-gray-400">
-                        No courts found in this area
+                        No facilities found in this area
                       </p>
                       <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
                         Try increasing the search radius
@@ -385,46 +419,68 @@ export default function NearbyCourtsPage() {
                     </div>
                   ) : (
                     <div className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {courts.map((court) => (
+                      {facilities.map((fac) => (
                         <div
-                          key={court.id}
+                          key={fac.id}
                           className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                         >
                           <div
                             className="cursor-pointer mb-3"
-                            onClick={() => setSelectedCourt(court)}
+                            onClick={() => handleSelectFacility(fac)}
                           >
                             <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                              {court.name}
+                              {fac.name}
                             </h3>
                             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                              {court.address}
+                              {fac.address}
                             </p>
                             <div className="flex items-center justify-between">
-                              {court.sport_type && (
-                                <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded">
-                                  {court.sport_type}
-                                </span>
-                              )}
-                              {court.distance !== undefined && (
+                              {fac.distance !== undefined && (
                                 <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                                  {court.distance.toFixed(2)} km
+                                  {fac.distance.toFixed(2)} km
                                 </span>
                               )}
                             </div>
                           </div>
-                          <Link
-                            href={`/booking/${court.id}`}
-                            className="block w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all text-center shadow-md hover:shadow-lg transform hover:scale-[1.02]"
-                          >
-                            Book Now
-                          </Link>
+                          <div className="mt-2">
+                            <button
+                              onClick={() => fetchFacilityCourts(fac.id)}
+                              className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all text-center shadow-md hover:shadow-lg"
+                            >
+                              View Courts
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
                   )}
                 </div>
               </div>
+
+              {/* Courts for selected facility */}
+              {facilityCourts.length > 0 && (
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden mt-4">
+                  <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-lg font-bold text-gray-900 dark:text-white">Courts at this facility</h2>
+                  </div>
+                  <div className="overflow-y-auto" style={{ maxHeight: '300px' }}>
+                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
+                      {facilityCourts.map((court) => (
+                        <div key={court.id} className="p-4">
+                          <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{court.name}</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Sport: {court.sport}</p>
+                          <Link
+                            href={`/booking/${court.id}`}
+                            className="block w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors text-center"
+                          >
+                            Book Now
+                          </Link>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
