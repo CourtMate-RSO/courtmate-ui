@@ -12,10 +12,8 @@ const nextConfig: NextConfig = {
         source: '/api/proxy/court/:path*',
         destination: `${process.env.COURT_SERVICE_URL || 'http://court-service'}/:path*`,
       },
-      {
-        source: '/api/proxy/booking/:path*',
-        destination: `${process.env.BOOKING_SERVICE_URL || 'http://booking-service'}/:path*`,
-      },
+      // NOTE: Booking proxy rewrite removed - the API route at /api/proxy/booking/reservation/route.ts
+      // handles booking requests and adds the required Authorization header for authentication
     ];
   },
 };

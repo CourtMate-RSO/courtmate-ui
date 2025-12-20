@@ -81,6 +81,7 @@ export default function BookingPage() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include',
                 body: JSON.stringify({
                     court_id: courtId,
                     starts_at: startsAt.toISOString(),

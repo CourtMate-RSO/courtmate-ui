@@ -49,7 +49,7 @@ export default function BookingsPage() {
             setLoading(true);
             setError(null);
 
-            const response = await fetch('/api/proxy/booking/reservation/');
+            const response = await fetch('/api/proxy/booking/reservation/', { credentials: 'include' });
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ error: 'Failed to fetch bookings' }));

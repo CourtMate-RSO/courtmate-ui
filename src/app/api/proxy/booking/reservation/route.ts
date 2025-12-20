@@ -5,8 +5,14 @@ export async function GET(request: NextRequest) {
     try {
         const session = await auth();
 
-        if (!session || !session.accessToken) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        if (!session) {
+            console.error('[Booking Proxy] No session found for request');
+            return NextResponse.json({ error: 'Unauthorized - no session' }, { status: 401 });
+        }
+
+        if (!session.accessToken) {
+            console.error('[Booking Proxy] Session found but missing accessToken');
+            return NextResponse.json({ error: 'Unauthorized - missing access token' }, { status: 401 });
         }
 
         const bookingServiceUrl = process.env.BOOKING_SERVICE_URL || 'http://localhost:8002';
