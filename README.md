@@ -1,112 +1,93 @@
 # CourtMate UI
 
-Modern web application for booking and managing sports courts built with Next.js 16 and NextAuth v5.
+A modern, responsive web application for discovering, booking, and managing sports courts. Built with industry-leading technologies including Next.js 16, React 19, NextAuth v5, and Tailwind CSS, the CourtMate UI provides users with a seamless experience for finding nearby courts, managing bookings, and handling their profiles.
+
+## Table of Contents
+
+- [Application Purpose](#application-purpose)
+- [Features](#features)
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Architecture](#architecture)
+- [Usage Examples](#usage-examples)
+
+## Application Purpose
+
+CourtMate UI is the frontend layer of the CourtMate platform—a comprehensive court management and booking system. It enables:
+
+- **Players**: Discover and book available sports courts near their location
+- **Managers**: Manage court information and availability
+- **System Users**: Access a fully authenticated platform with role-based access control
+
+The application is designed for both desktop and mobile devices, providing a responsive user experience across all screen sizes.
 
 ## Features
 
-- 🔐 **Authentication**
-  - Email/Password login and registration
-  - Google OAuth integration
-  - Email verification flow
-  - Protected routes with middleware
+### 🔐 Authentication & Security
+- Email/Password login and registration with secure password handling
+- Google OAuth integration for quick sign-up and login
+- Email verification flow with token-based confirmation
+- Protected routes with session-based middleware protection
+- JWT-based session management via NextAuth v5
+- Secure credential handling with environment variables
 
-- 👤 **User Onboarding**
-  - First-time user onboarding modal
-  - Profile setup (full name, phone, role)
-  - Role selection (Player/Manager)
+### 👤 User Onboarding & Profile Management
+- First-time user onboarding modal with guided setup
+- Profile setup including full name, phone number, and role selection
+- Role selection system (Player/Manager) for personalized experiences
+- Profile update capabilities through dashboard
 
-- 🗺️ **Nearby Courts**
-  - Find courts near your location using geolocation
-  - Interactive Google Maps integration
-  - Adjustable search radius (5-50 km)
-  - List and map view of nearby facilities
-  - Real-time distance calculations
+### 🗺️ Nearby Courts Discovery
+- Location-based court discovery using browser geolocation API
+- Interactive Google Maps integration for visual court browsing
+- Adjustable search radius (5-50 km) for flexible discovery
+- Dual list and map view for better user experience
+- Real-time distance calculations from user location
+- Court filtering and sorting capabilities
 
-- 🎾 **Court Booking**
-  - Book courts directly from the map
-  - Date and time selection
-  - Real-time availability checking
-  - Reservation management
-  - Authentication required for bookings
+### 🎾 Court Booking & Reservations
+- Direct court booking from map or list view
+- Intuitive date and time selection interface
+- Real-time availability checking against database
+- Reservation management (view, modify, cancel bookings)
+- Authentication-required booking flow for accountability
+- Booking confirmation and status tracking
 
-- 📱 **Responsive UI**
-  - Modern gradient design
-  - Dark mode support
-  - Tailwind CSS styling
-  - Mobile-friendly interface
+### 📱 Modern UI/UX
+- Responsive design that works seamlessly on all devices
+- Modern gradient design with contemporary aesthetics
+- Dark mode support for reduced eye strain
+- Tailwind CSS for efficient, maintainable styling
+- Smooth animations and transitions
+- Loading states and error handling
+- Accessible component design (WCAG compliance)
 
-## Tech Stack
+## Technology Stack
 
-- **Framework**: Next.js 16.0.3 (App Router)
-- **Authentication**: NextAuth v5 (beta.30)
-- **UI**: React 19.2.0, Tailwind CSS 4
-- **Icons**: React Icons 5.5.0
-- **Backend**: FastAPI User Service
-- **Database/Auth**: Supabase
+### Frontend Technologies
+| Layer | Technology | Version | Purpose |
+|-------|-----------|---------|---------|
+| **Framework** | Next.js | 16.0.3 | React framework with SSR/SSG and API routes |
+| **UI Library** | React | 19.2.0 | Component-based UI development |
+| **Styling** | Tailwind CSS | 4.0.0 | Utility-first CSS framework |
+| **Icons** | React Icons | 5.5.0 | SVG icon library |
+| **Authentication** | NextAuth | 5.0.0-beta.30 | Flexible authentication solution |
+| **Maps** | @vis.gl/react-google-maps | 1.7.1 | Google Maps integration |
+| **Language** | TypeScript | 5.x | Type-safe JavaScript |
 
-## Prerequisites
+### Backend Services Integration
+- **User Service**: FastAPI microservice (Port 8000) - Handles authentication and user management
+- **Booking Service**: FastAPI microservice (Port 8002) - Manages court reservations
+- **Court Service**: FastAPI microservice (Port 8001) - Manages court information and geolocation
+- **Database**: Supabase - PostgreSQL with real-time capabilities
+- **Authentication**: Supabase Auth with JWT tokens
 
-- Node.js 18+ and pnpm
-- Running User Service backend on port 8000
-- Running Booking Service backend on port 8002
-- Supabase project with authentication enabled
+### Development Tools
+- **Package Manager**: pnpm (faster, more efficient than npm)
+- **Linter**: ESLint with Next.js configuration
+- **Build Tool**: Next.js built-in webpack
+- **Type Checking**: TypeScript
 
-## Installation
-
-```bash
-# Install dependencies
-pnpm install
-
-# Set up environment variables
-cp .env.example .env.local
-```
-
-## Environment Variables
-
-Create a `.env.local` file with the following:
-
-```env
-# NextAuth Configuration
-NEXTAUTH_URL=http://localhost:3000
-AUTH_SECRET=your-secret-key-here-please-change-this-to-random-string
-AUTH_TRUST_HOST=true
-
-# Google OAuth (Optional)
-AUTH_GOOGLE_ID=your-google-client-id
-AUTH_GOOGLE_SECRET=your-google-client-secret
-
-# User Service API
-USER_SERVICE_URL=http://127.0.0.1:8000/
-NEXT_PUBLIC_USER_SERVICE_URL=http://127.0.0.1:8000/
-
-# Facilities Service API
-FACILITIES_SERVICE_URL=http://127.0.0.1:8001/
-NEXT_PUBLIC_FACILITIES_SERVICE_URL=http://127.0.0.1:8001/
-
-# Booking Service API
-BOOKING_SERVICE_URL=http://127.0.0.1:8002/
-
-# API Version
-API_VERSION=v1
-
-# Google Maps API Key (Required for nearby courts feature)
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-api-key-here
-```
-
-## Development
-
-```bash
-# Start development server
-pnpm dev
-
-# Build for production
-pnpm build
-
-# Start production server
-pnpm start
-```
-
-The application will be available at `http://localhost:3000`
 
 ## Project Structure
 
@@ -227,23 +208,3 @@ Public routes:
 - Middleware uses NextAuth's `auth` function for session detection
 - All client-side API calls use `NEXT_PUBLIC_` prefixed env vars
 - TypeScript types extended for custom session fields
-
-## Troubleshooting
-
-### Build Errors
-- Ensure all environment variables are set
-- Run `pnpm install` to ensure dependencies are up to date
-
-### Authentication Issues
-- Verify backend is running on correct port
-- Check `USER_SERVICE_URL` matches backend address
-- Ensure Supabase redirect URLs are configured
-
-### Google OAuth Not Working
-- Verify OAuth credentials in Google Console
-- Check redirect URIs match exactly
-- Ensure `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET` are set
-
-## License
-
-MIT
