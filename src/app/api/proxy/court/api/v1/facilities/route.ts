@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
         const apiVersion = process.env.API_VERSION || 'v1';
         const body = await request.json();
 
-        const response = await fetch(`${facilitiesServiceUrl}/api/${apiVersion}/facilities`, {
+        const response = await fetch(`${facilitiesServiceUrl}/api/${apiVersion}/facilities/`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${session.accessToken}`,
