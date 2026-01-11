@@ -1,0 +1,35 @@
+replicaCount: 1
+
+image:
+  repository: courtmate603fc8acr.azurecr.io/courtmate-ui
+  tag: v1.0
+  pullPolicy: IfNotPresent
+
+containerPort: 3000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  host: "courtmate.duckdns.org"
+  path: /
+  tls:
+    enabled: true
+    secretName: courtmate-ui-tls
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+envFromSecret:
+  enabled: true
+  secretName: ui-secrets
